@@ -202,7 +202,13 @@ const App: React.FC = () => {
       case 'loadingResult':
         return <LoadingResultPage />;
       case 'result':
-        return result && <ResultPage result={result} onRestart={restart} />;
+        return result && <ResultPage 
+                            result={result} 
+                            topic={topic}
+                            questions={questions}
+                            answers={answers}
+                            onRestart={restart} 
+                         />;
       case 'home':
       default:
         return <HomePage onStart={(keyword) => handleSuggestionGeneration(keyword)} isLoading={isLoading} error={error} />;

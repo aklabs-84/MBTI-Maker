@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { MBTIResult, MbtiDimension } from '../types';
+import { MBTIResult, MbtiDimension, Question } from '../types';
 import { MBTI_AXES } from '../constants';
 
 interface ResultPageProps {
   result: MBTIResult;
+  topic: string;
+  questions: Question[];
+  answers: Record<string, 'L' | 'R'>;
   onRestart: () => void;
 }
 
@@ -81,7 +84,7 @@ const DimensionBar: React.FC<{
 };
 
 
-const ResultPage: React.FC<ResultPageProps> = ({ result, onRestart }) => {
+const ResultPage: React.FC<ResultPageProps> = ({ result, topic, questions, answers, onRestart }) => {
     const [activeTab, setActiveTab] = useState('analysis');
     
     const shareResult = () => {
@@ -91,6 +94,44 @@ const ResultPage: React.FC<ResultPageProps> = ({ result, onRestart }) => {
         }).catch(err => {
             console.error('Failed to copy text: ', err);
         });
+    };
+
+    const handleDownload = () => {
+        let content = `========================================\n`;
+        content += ` AI Topic MBTI - 생성된 테스트 정보\n`;
+        content += `========================================\n\n`;
+    
+        content += `주제: ${topic}\n\n`;
+    
+        content += `----------------------------------------\n`;
+        content += ` 최종 MBTI 유형: ${result.type}\n`;
+        content += `----------------------------------------\n\n`;
+    
+        content += `========================================\n`;
+        content += ` 📝 생성된 질문 및 보기 전체\n`;
+        content += `========================================\n\n`;
+    
+        questions.forEach((q, index) => {
+            const userAnswerId = answers[q.id];
+            content += `${index + 1}. ${q.text}\n`;
+            
+            q.choices.forEach(choice => {
+                const isSelected = choice.id === userAnswerId;
+                content += `   ${isSelected ? '▶' : '○'} ${choice.label}\n`;
+            });
+            content += `\n`;
+        });
+    
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mbti_test_${topic.replace(/\s+/g, '_')}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     const getDimensionPercentage = (d1: MbtiDimension, d2: MbtiDimension): number => {
@@ -190,18 +231,26 @@ const ResultPage: React.FC<ResultPageProps> = ({ result, onRestart }) => {
                 </div>
             </div>
 
-            <div className="flex w-full space-x-3 pt-4">
+            <div className="w-full pt-4 space-y-3">
+                <div className="flex space-x-3">
+                    <button
+                        onClick={shareResult}
+                        className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-full hover:bg-gray-300 transition-all duration-300 transform hover:scale-105"
+                    >
+                        공유하기
+                    </button>
+                    <button
+                        onClick={handleDownload}
+                        className="flex-1 px-6 py-3 bg-sky-500 text-white font-bold rounded-full hover:bg-sky-600 transition-all duration-300 transform hover:scale-105"
+                    >
+                        결과 다운로드
+                    </button>
+                </div>
                 <button
-                onClick={shareResult}
-                className="w-1/2 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-full hover:bg-gray-300 transition-all duration-300 transform hover:scale-105"
+                    onClick={onRestart}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105"
                 >
-                공유하기
-                </button>
-                <button
-                onClick={onRestart}
-                className="w-1/2 px-6 py-3 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105"
-                >
-                다시하기
+                    다시하기
                 </button>
             </div>
         </div>
