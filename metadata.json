@@ -1,0 +1,5 @@
+{
+  "name": "MBTI Maker",
+  "description": "An AI-powered web application that generates a personalized MBTI questionnaire based on a user-provided topic. It scores responses, determines the most suitable MBTI type, and provides a topic-specific interpretation of the results.",
+  "requestFramePermissions": []
+}
